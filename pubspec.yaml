@@ -4,7 +4,9 @@ version: 0.0.1
 homepage: https://github.com/Avengong/flutter_easy_barrage
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
+
+  flutter: ">=1.10.0"
 
 dependencies:
   flutter:

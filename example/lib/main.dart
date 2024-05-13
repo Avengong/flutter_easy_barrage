@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:flutter_easy_barrage/barrage/easy_barrage.dart';
-import 'package:flutter_easy_barrage/flutter_easy_barrage.dart';
+import 'package:flutter_easy_barrage/barrage/flutter_easy_barrage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +19,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
-  final _flutterEasyBarragePlugin = FlutterEasyBarrage();
 
   EasyBarrageController controller = EasyBarrageController();
 
@@ -41,8 +39,8 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      platformVersion =
-          await _flutterEasyBarragePlugin.getPlatformVersion() ?? 'Unknown platform version';
+      // platformVersion =
+      //     await _flutterEasyBarragePlugin.getPlatformVersion() ?? 'Unknown platform version';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -53,7 +51,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _platformVersion = platformVersion;
+      // _platformVersion = platformVersion;
     });
   }
 

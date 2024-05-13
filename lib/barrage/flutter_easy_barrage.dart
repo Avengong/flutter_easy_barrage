@@ -4,27 +4,27 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class EasyBarrage extends StatefulWidget {
-  double width;
-  double height;
+  final double width;
+  final double height;
 
-  int rowNum = 3;
+  final int rowNum;
 
   /// 行轨道之间的行间距高度
-  double rowSpaceHeight = 10;
+  final double rowSpaceHeight;
 
   ///一行中，每个item的水平间距宽度
-  double itemSpaceWidth;
-  Duration duration;
+  final double itemSpaceWidth;
+  final Duration duration;
 
   ///是否随机
-  bool randomItemSpace;
-  EasyBarrageController controller;
+  final bool randomItemSpace;
+  final EasyBarrageController controller;
 
   ///弹幕从某个位置开始出现，默认是0
-  double originStart;
+  final double originStart;
 
   /// 轨道下标：对应轨道弹幕延迟出现的时间
-  Map<int, Duration>? channelDelayMap;
+  final Map<int, Duration>? channelDelayMap;
 
   /// 默认从右到左
   final TransitionDirection direction;
@@ -83,13 +83,10 @@ class EasyBarrageState extends State<EasyBarrage> {
   }
 
   void handleBarrages() {
-
     double totalSpaceWidth = (widget.rowNum - 1) * widget.itemSpaceWidth;
     _controller.totalMapBarrageItems.forEach((key, value) {
       BarrageLineController ctrl = controllers[key];
-      if (ctrl != null) {
-        dispatch(ctrl, value, key, _controller.slideWidth + totalSpaceWidth);
-      }
+      dispatch(ctrl, value, key, _controller.slideWidth + totalSpaceWidth);
     });
 
     if (_controller.totalBarrageItems.isNotEmpty) {
@@ -309,8 +306,8 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
 
     controller.lastBarrage(element.id, widget.fixedWidth);
 
-    Animation<double> _animation;
-    AnimationController _animationController = AnimationController(duration: widget.duration, vsync: this)
+    Animation<double> animation;
+    AnimationController animationController = AnimationController(duration: widget.duration, vsync: this)
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           controller.barrageItems.removeWhere((_element) => _element.id == element.id);
@@ -321,15 +318,15 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
     // 精准控制widget从屏幕右边移动到屏幕左边。
     // 总的移动路程：屏幕的宽度+自身的宽度。
     var begin = originStart;
-    var end =widget.fixedWidth*2; // 暂时设置为展示宽度的2倍,理论上应该是 fixedWidth+widget本身的长度。这样可以保证速度一致。
+    var end = widget.fixedWidth * 2; // 暂时设置为展示宽度的2倍,理论上应该是 fixedWidth+widget本身的长度。这样可以保证速度一致。
     // var end = widget.fixedWidth + childWidth + originStart; // 精准！但是有个问题，如果每次的弹幕宽度不一致，会导致速度不一样
-    _animation = Tween(begin: begin, end: end).animate(_animationController..forward());
+    animation = Tween(begin: begin, end: end).animate(animationController..forward());
 
     var widgetBarrage = AnimatedBuilder(
-      animation: _animation,
+      animation: animation,
       child: element.item,
       builder: (BuildContext context, Widget? child) {
-        if (_animation.isCompleted) {
+        if (animation.isCompleted) {
           controller.updateLastItemPosition(BarrageItemPosition(animationValue: double.infinity, id: element.id));
           return const SizedBox();
         }
@@ -341,7 +338,7 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
             var rb = renderBox as RenderBox;
             if (rb.hasSize == true) {
               widgetWidth = renderBox.size.width;
-              if (widgetWidth > 0 && _animation.value >= (widget.fixedWidth + widgetWidth - 2)) {
+              if (widgetWidth > 0 && animation.value >= (widget.fixedWidth + widgetWidth - 2)) {
                 controller.updateLastItemPosition(BarrageItemPosition(id: element.id, animationValue: double.infinity));
                 return const SizedBox();
               }
@@ -349,13 +346,13 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
           }
         }
 
-        var widthPos = widget.fixedWidth - _animation.value;
+        var widthPos = widget.fixedWidth - animation.value;
         if (widget.direction == TransitionDirection.rtl) {
-          widthPos = widget.fixedWidth - _animation.value;
+          widthPos = widget.fixedWidth - animation.value;
         } else if (widget.direction == TransitionDirection.ltr) {
-          widthPos = _animation.value - element.itemWidth;
+          widthPos = animation.value - element.itemWidth;
         }
-        controller.updateLastItemPosition(BarrageItemPosition(animationValue: _animation.value, id: element.id, widgetWidth: widgetWidth));
+        controller.updateLastItemPosition(BarrageItemPosition(animationValue: animation.value, id: element.id, widgetWidth: widgetWidth));
         const heightPos = .0;
         return Transform.translate(
           offset: Offset(widthPos, heightPos),
@@ -363,7 +360,7 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
         );
       },
     );
-    controller.widgets.putIfAbsent(_animationController, () => widgetBarrage);
+    controller.widgets.putIfAbsent(animationController, () => widgetBarrage);
     setState(() {});
   }
 
@@ -376,12 +373,12 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
       child: LayoutBuilder(builder: (_, snapshot) {
         _width = widget.fixedWidth ?? snapshot.maxWidth;
         _height = widget.height ?? snapshot.maxHeight;
-        return Stack(fit: StackFit.expand,
+        return Stack(
+            fit: StackFit.expand,
             // alignment: Alignment.centerLeft,
             children: <Widget>[
               // widget.child,
-              Stack(fit: StackFit.loose, alignment: Alignment.centerLeft, children: <Widget>[...controller.widgets.values]
-                  ),
+              Stack(fit: StackFit.loose, alignment: Alignment.centerLeft, children: <Widget>[...controller.widgets.values]),
             ]);
       }),
     );
@@ -395,18 +392,18 @@ class BarrageLineController extends ValueNotifier<BarrageItemValue> {
   Map<AnimationController, Widget> get widgets => _widgets;
   BarrageItemPosition? _itemPosition;
 
-  Map<AnimationController, Widget> _widgets = new LinkedHashMap();
+  final Map<AnimationController, Widget> _widgets = {};
 
   BarrageLineController() : super(BarrageItemValue());
 
   ValueNotifier<int> get tickNotifier => _tickNotifier;
-  ValueNotifier<int> _tickNotifier = ValueNotifier(0);
+  final ValueNotifier<int> _tickNotifier = ValueNotifier(0);
 
   int _tickCont = 1;
 
-  void trigger(List<BarrageItem> items, double _maxWidth) {
+  void trigger(List<BarrageItem> items, double localMaxWidth) {
     barrageItems.addAll(items);
-    maxWidth = _maxWidth;
+    maxWidth = localMaxWidth;
 
     value = BarrageItemValue(widgets: barrageItems);
   }
