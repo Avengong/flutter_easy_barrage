@@ -30,6 +30,7 @@ class _MyAppState extends State<MyApp> {
     // channelDelayMap[1] = const Duration(milliseconds: 600);
     // channelDelayMap[2] = const Duration(milliseconds: 300);
     super.initState();
+    controller.updateSpeed(Duration(seconds: 3));
     initPlatformState();
   }
 

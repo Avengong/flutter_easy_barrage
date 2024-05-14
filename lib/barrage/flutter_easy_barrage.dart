@@ -72,6 +72,12 @@ class EasyBarrageState extends State<EasyBarrage> {
       controllers.add(barrageController);
     }
 
+    _controller.speedNotify.addListener(() {
+      controllers.forEach((element) {
+        element.updateSpeed(_controller.speedNotify.value);
+      });
+    });
+
     super.initState();
   }
 
@@ -166,7 +172,7 @@ class EasyBarrageState extends State<EasyBarrage> {
 class EasyBarrageController extends ValueNotifier<BarrageItemValue> {
   List<BarrageItem> totalBarrageItems = [];
   HashMap<int, List<BarrageItem>> totalMapBarrageItems = HashMap<int, List<BarrageItem>>();
-
+  ValueNotifier<Duration> speedNotify=ValueNotifier<Duration>(Duration.zero);
   double slideWidth = 0;
 
   EasyBarrageController() : super(BarrageItemValue());
@@ -213,6 +219,11 @@ class EasyBarrageController extends ValueNotifier<BarrageItemValue> {
     totalMapBarrageItems.clear();
     totalBarrageItems.clear();
   }
+
+  void updateSpeed(Duration duration) {
+    speedNotify.value=duration;
+  }
+
 }
 
 typedef HandleComplete = void Function();
@@ -291,6 +302,7 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
     if (controller.hasNoItem()) {
       if (!hasCalled) {
         widget.onHandleComplete?.call();
+        controller._tickCont=1;
         hasCalled = true;
       }
       return;
@@ -305,9 +317,13 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
     // double childWidth = controller.maxWidth;
 
     controller.lastBarrage(element.id, widget.fixedWidth);
-
+    var duration=widget.duration;
+    Duration? dynamicDuration=controller.dynamicDuration;
+    if(dynamicDuration!=null){
+      duration=dynamicDuration;
+    }
     Animation<double> animation;
-    AnimationController animationController = AnimationController(duration: widget.duration, vsync: this)
+    AnimationController animationController = AnimationController(duration: duration, vsync: this)
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           controller.barrageItems.removeWhere((element2) => element2.id == element.id);
@@ -358,7 +374,10 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
       },
     );
     controller.widgets.putIfAbsent(animationController, () => widgetBarrage);
-    setState(() {});
+    if(mounted){
+      setState(() {});
+    }
+
   }
 
   @override
@@ -366,7 +385,7 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
     return Container(
       alignment: Alignment.center,
       height: widget.height,
-      color: Colors.black12,
+      // color: Colors.black12,
       child: LayoutBuilder(builder: (_, snapshot) {
         // _width = widget.fixedWidth ?? snapshot.maxWidth;
         // _height = widget.height ?? snapshot.maxHeight;
@@ -395,7 +414,7 @@ class BarrageLineController extends ValueNotifier<BarrageItemValue> {
 
   ValueNotifier<int> get tickNotifier => _tickNotifier;
   final ValueNotifier<int> _tickNotifier = ValueNotifier(0);
-
+  Duration? dynamicDuration;
   int _tickCont = 1;
 
   void trigger(List<BarrageItem> items, double localMaxWidth) {
@@ -452,6 +471,11 @@ class BarrageLineController extends ValueNotifier<BarrageItemValue> {
   BarrageItem next() {
     return barrageItems.removeAt(0);
   }
+
+  void updateSpeed(Duration value) {
+    dynamicDuration=value;
+  }
+
 }
 
 class BarrageItemPosition {
