@@ -177,10 +177,10 @@ class EasyBarrageController extends ValueNotifier<BarrageItemValue> {
 
     double maxW = 0;
     double totalW = 0;
-    totalBarrageItems.forEach((element) {
+    for (var element in totalBarrageItems) {
       maxW = max(maxW, element.itemWidth);
       totalW += element.itemWidth;
-    });
+    }
     slideWidth = totalW;
     value = BarrageItemValue(widgets: totalBarrageItems, slideWidth: slideWidth);
   }
@@ -193,10 +193,10 @@ class EasyBarrageController extends ValueNotifier<BarrageItemValue> {
       double originmaxW = 0;
       totalMapBarrageItems.forEach((key, value) {
         double totalW = 0;
-        value.forEach((element) {
+        for (var element in value) {
           originmaxW = max(originmaxW, element.itemWidth);
           totalW += element.itemWidth;
-        });
+        }
         totalWidth = max(totalWidth, totalW);
       });
       slideWidth = totalWidth;
@@ -218,7 +218,7 @@ class EasyBarrageController extends ValueNotifier<BarrageItemValue> {
 typedef HandleComplete = void Function();
 
 class BarrageLine extends StatefulWidget {
-  BarrageLine(
+  const BarrageLine(
       {required this.controller,
       Key? key,
       // this.bgchild,
@@ -232,20 +232,20 @@ class BarrageLine extends StatefulWidget {
       this.direction = TransitionDirection.rtl})
       : super(key: key);
 
-  double height;
+  final double height;
 
-  bool randomItemSpace;
-  double itemSpaceWidth;
+  final  bool randomItemSpace;
+  final double itemSpaceWidth;
 
   /// 平移时间（秒）
   ///
-  Duration duration;
+  final Duration duration;
 
-  double originStart;
+  final double originStart;
 
   ///弹幕展示的宽度
   final double fixedWidth;
-  BarrageLineController controller;
+  final  BarrageLineController controller;
 
   ///
   /// 平移方向
@@ -259,10 +259,10 @@ class BarrageLine extends StatefulWidget {
 }
 
 class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin {
-  double _width = 0;
-  double _height = 0;
+  // double _width = 0;
+  // double _height = 0;
   late BarrageLineController controller;
-  Random _random = Random();
+  final Random _random = Random();
   bool hasCalled = false;
 
   @override
@@ -302,7 +302,7 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
       return;
     }
     var element = controller.next();
-    double childWidth = controller.maxWidth;
+    // double childWidth = controller.maxWidth;
 
     controller.lastBarrage(element.id, widget.fixedWidth);
 
@@ -310,13 +310,10 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
     AnimationController animationController = AnimationController(duration: widget.duration, vsync: this)
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
-          controller.barrageItems.removeWhere((_element) => _element.id == element.id);
+          controller.barrageItems.removeWhere((element2) => element2.id == element.id);
         }
       });
 
-    // 要解决的问题：
-    // 精准控制widget从屏幕右边移动到屏幕左边。
-    // 总的移动路程：屏幕的宽度+自身的宽度。
     var begin = originStart;
     var end = widget.fixedWidth * 2; // 暂时设置为展示宽度的2倍,理论上应该是 fixedWidth+widget本身的长度。这样可以保证速度一致。
     // var end = widget.fixedWidth + childWidth + originStart; // 精准！但是有个问题，如果每次的弹幕宽度不一致，会导致速度不一样
@@ -371,8 +368,8 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
       height: widget.height,
       color: Colors.black12,
       child: LayoutBuilder(builder: (_, snapshot) {
-        _width = widget.fixedWidth ?? snapshot.maxWidth;
-        _height = widget.height ?? snapshot.maxHeight;
+        // _width = widget.fixedWidth ?? snapshot.maxWidth;
+        // _height = widget.height ?? snapshot.maxHeight;
         return Stack(
             fit: StackFit.expand,
             // alignment: Alignment.centerLeft,
