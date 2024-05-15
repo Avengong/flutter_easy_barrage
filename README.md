@@ -30,7 +30,7 @@ A very easy barrage wall  to use!
 * **Map<int, Duration>? channelDelayMap;** - 轨道下标 ：对应轨道弹幕延迟出现的时间，用来强行指定每个轨道弹幕的延迟出现时机，不设置则默认为随机出现
 * **double rowSpaceHeight** - 弹幕轨道间的间距。
 
-[more examples - 详细用法请查看 examples](https://github.com/Avengong/flutter_easy_barrage/blob/master/lib/main.dart)
+[more examples - 详细用法请查看 examples](https://github.com/Avengong/flutter_easy_barrage/blob/master/example/lib/main.dart)
 
 * show barrage easy!
 
