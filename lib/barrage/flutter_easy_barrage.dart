@@ -172,7 +172,7 @@ class EasyBarrageState extends State<EasyBarrage> {
 class EasyBarrageController extends ValueNotifier<BarrageItemValue> {
   List<BarrageItem> totalBarrageItems = [];
   HashMap<int, List<BarrageItem>> totalMapBarrageItems = HashMap<int, List<BarrageItem>>();
-  ValueNotifier<Duration> speedNotify=ValueNotifier<Duration>(Duration.zero);
+  ValueNotifier<int> speedNotify=ValueNotifier<int>(0);
   double slideWidth = 0;
 
   EasyBarrageController() : super(BarrageItemValue());
@@ -220,8 +220,9 @@ class EasyBarrageController extends ValueNotifier<BarrageItemValue> {
     totalBarrageItems.clear();
   }
 
-  void updateSpeed(Duration duration) {
-    speedNotify.value=duration;
+  void updateSpeed(int milliseconds) {
+    speedNotify.value=milliseconds;
+
   }
 
 }
@@ -231,16 +232,16 @@ typedef HandleComplete = void Function();
 class BarrageLine extends StatefulWidget {
   const BarrageLine(
       {required this.controller,
-      Key? key,
-      // this.bgchild,
-      this.duration = const Duration(seconds: 5),
-      this.onHandleComplete,
-      this.itemSpaceWidth = 45,
-      this.randomItemSpace = false,
-      this.originStart = 0,
-      required this.fixedWidth,
-      required this.height,
-      this.direction = TransitionDirection.rtl})
+        Key? key,
+        // this.bgchild,
+        this.duration = const Duration(seconds: 5),
+        this.onHandleComplete,
+        this.itemSpaceWidth = 45,
+        this.randomItemSpace = false,
+        this.originStart = 0,
+        required this.fixedWidth,
+        required this.height,
+        this.direction = TransitionDirection.rtl})
       : super(key: key);
 
   final double height;
@@ -318,9 +319,9 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
 
     controller.lastBarrage(element.id, widget.fixedWidth);
     var duration=widget.duration;
-    Duration? dynamicDuration=controller.dynamicDuration;
-    if(dynamicDuration!=null){
-      duration=dynamicDuration;
+    int? milliseconds=controller.milliseconds;
+    if(milliseconds!=null){
+      duration=Duration(milliseconds: milliseconds);
     }
     Animation<double> animation;
     AnimationController animationController = AnimationController(duration: duration, vsync: this)
@@ -333,6 +334,7 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
     var begin = originStart;
     var end = widget.fixedWidth * 2; // 暂时设置为展示宽度的2倍,理论上应该是 fixedWidth+widget本身的长度。这样可以保证速度一致。
     // var end = widget.fixedWidth + childWidth + originStart; // 精准！但是有个问题，如果每次的弹幕宽度不一致，会导致速度不一样
+
     animation = Tween(begin: begin, end: end).animate(animationController..forward());
 
     var widgetBarrage = AnimatedBuilder(
@@ -385,7 +387,7 @@ class _BarrageLineState extends State<BarrageLine> with TickerProviderStateMixin
     return Container(
       alignment: Alignment.center,
       height: widget.height,
-      // color: Colors.black12,
+      // color: Colors.greenAccent,
       child: LayoutBuilder(builder: (_, snapshot) {
         // _width = widget.fixedWidth ?? snapshot.maxWidth;
         // _height = widget.height ?? snapshot.maxHeight;
@@ -414,7 +416,7 @@ class BarrageLineController extends ValueNotifier<BarrageItemValue> {
 
   ValueNotifier<int> get tickNotifier => _tickNotifier;
   final ValueNotifier<int> _tickNotifier = ValueNotifier(0);
-  Duration? dynamicDuration;
+  int? milliseconds;
   int _tickCont = 1;
 
   void trigger(List<BarrageItem> items, double localMaxWidth) {
@@ -472,8 +474,8 @@ class BarrageLineController extends ValueNotifier<BarrageItemValue> {
     return barrageItems.removeAt(0);
   }
 
-  void updateSpeed(Duration value) {
-    dynamicDuration=value;
+  void updateSpeed(int milliseconds) {
+    this.milliseconds=milliseconds;
   }
 
 }
